@@ -67,6 +67,7 @@ if (-not (Test-Path $vcpkgBootstrapPath))
 
 function getVisualStudioInstances()
 {
+    Write-Host "get vs"
     $programFiles = getProgramFiles32bit
     $results = New-Object System.Collections.ArrayList
     $vswhereExe = "$programFiles\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -107,9 +108,11 @@ function getVisualStudioInstances()
     {
         Write-Verbose "Could not locate vswhere at $vswhereExe"
     }
-
+    
+    Write-Host "!!"
     if ("$env:vs140comntools" -ne "")
     {
+        Write-Host "e!!"
         $installationPath = Split-Path -Parent $(Split-Path -Parent "$env:vs140comntools")
         $clExe = "$installationPath\VC\bin\cl.exe"
         $vcvarsallbat = "$installationPath\VC\vcvarsall.bat"
@@ -119,11 +122,12 @@ function getVisualStudioInstances()
             $results.Add("PreferenceWeight1::Legacy::14.0::$installationPath") > $null
         }
     }
-
-    $installationPath = "$programFiles\Microsoft Visual Studio 14.0"
-    $clExe = "$installationPath\VC\bin\cl.exe"
-    $vcvarsallbat = "$installationPath\VC\vcvarsall.bat"
-
+    else{
+        Write-Host "e!!"
+        Write-Host $installationPath
+        $clExe = "$installationPath\VC\bin\cl.exe"
+        $vcvarsallbat = "$installationPath\VC\vcvarsall.bat"
+    }
     if ((Test-Path $clExe) -And (Test-Path $vcvarsallbat))
     {
         $results.Add("PreferenceWeight1::Legacy::14.0::$installationPath") > $null
@@ -368,6 +372,9 @@ else
     $PreferredToolArchitecture = "x86"
 }
 
+Write-Host vcpkgBootstrapPath
+Write-Host $vcpkgBootstrapPath
+
 $arguments = (
 "`"/p:VCPKG_VERSION=-nohash`"",
 "`"/p:DISABLE_METRICS=$disableMetricsValue`"",
@@ -401,7 +408,7 @@ function vcpkgInvokeCommandClean()
     return $ec
 }
 
-# vcpkgInvokeCommandClean cmd "/c echo %PATH%"
+# vcpkgInvokeCommandClean cmd "/c Write-Host %PATH%"
 Write-Host "`nBuilding vcpkg.exe ...`n"
 $ec = vcpkgInvokeCommandClean $msbuildExe $arguments
 
